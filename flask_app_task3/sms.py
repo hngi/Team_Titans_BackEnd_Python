@@ -59,7 +59,10 @@ class IncomingSms(Resource):
             message = "Invalid message, Type 'HELLO' or 'HI' for a tip"
 
         # Call the Twilio Responder passing the message to it
-        response = twilio_responder(message)
+        twiml = twilio_responder(message)
+        response = make_response(str(twiml))
+        response.headers["Content-Type"] = "application/xml"
+
         return response
 
 

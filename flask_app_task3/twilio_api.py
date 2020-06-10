@@ -70,4 +70,4 @@ def twilio_responder(message):
     resp.message("message")
 
     #return the response
-    return str(resp)
+    return resp

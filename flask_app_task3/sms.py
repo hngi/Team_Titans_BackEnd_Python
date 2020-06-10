@@ -42,24 +42,27 @@ class IncomingSms(Resource):
     def post(self):
         """Send a dynamic reply to an incoming text message"""
         # Get the message the user sent our number
-        body = request.values.get("Body")
-        print(body)
+        body = request.values.get("Body", None)
+        if not body:
+            return {"info": "This endpoint is for listening for an incoming sms.\n Send an SMS with a verified number to get a reply"}
 
         # Determine the right reply for this message
         if body.lower() in ("hello", "hi"):
-            message = "Hi from Team-Titans! Send 'CHECK BALANCE' or '1' to see your balance. \nSend 'BYE' or '2' for a goodbye."
+            message = "Hi from Team-Titans! Send 'CHECK BALANCE' or 'CB' to see your balance. \nSend 'BYE' or for a goodbye."
 
-        elif body.lower() in ("check balance", '1'):
+        elif body.lower() in ("check balance", 'cb'):
             message = f"Your balance is {randint(1000,99999)}"
 
-        elif body.lower() in ('bye', "2"):
+        elif body.lower() in 'bye':
             message = "Goodbye"
 
         elif body:
             message = "Invalid message, Type 'HELLO' or 'HI' for a tip"
 
         # Call the Twilio Responder passing the message to it
-        response = twilio_responder(message)
+        twiml = twilio_responder(message)
+        response = make_response(str(twiml))
+        response.headers["Content-type"] = "application/xml" 
         return response
 
 

@@ -1,6 +1,10 @@
 # HNG_TASK3
 An SMS notfication service
 
+Running the app with docker locally:
+On a Mac or Linux Machine, run sudo bash docker_start.sh
+On a Windows Machine, Build and Run the container Yourself
+
 This app was built around Twilio API
 It is a micro-service that allows sending SMS's to phone numbers using a client app.
 

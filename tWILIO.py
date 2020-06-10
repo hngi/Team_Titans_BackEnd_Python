@@ -12,5 +12,5 @@ message = client.messages \
                      from_='+15017122661',
                      to='+2348143142973'
                  )
-#Sends message to user
+#Sends messages to user
 print(message.sid)

@@ -20,8 +20,8 @@ def twilio_sender(request):
     #A list of criteria so the endpoint doesn't return a 500 response should the client have missed a criteria
     os_get = os.environ.get
     criteria = dict(
-                auth_token = get("auth_token", os_get("AUTH_TOKEN)), 
-                account_sid = get("account_sid", os_get("ACCOUNT_SID)), 
+                auth_token = get("auth_token", os_get("AUTH_TOKEN")), 
+                account_sid = get("account_sid", os_get("ACCOUNT_SID")), 
                 sender = json.get("sender") or get("sender", os_get("SENDER")),  
                 receiver = json.get("receiver") or get("receiver", os_get("RECEIVER")),
                 text = json.get("text")

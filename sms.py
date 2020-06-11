@@ -42,17 +42,18 @@ class IncomingSms(Resource):
     def post(self):
         """Send a dynamic reply to an incoming text message"""
         # Get the message the user sent our number
-        body = request.values.get("Body")
-        print(body)
+        body = request.values.get("Body", None)
+        if not body:
+            return {"info": "This endpoint is to be accessed by sending an SMS to the Twilio number with a registered number"}, 403
 
         # Determine the right reply for this message
         if body.lower() in ("hello", "hi"):
-            message = "Hi from Team-Titans! Send 'CHECK BALANCE' or '1' to see your balance. \nSend 'BYE' or '2' for a goodbye."
+            message = "Hi from Team-Titans! Send 'CHECK BALANCE' or 'CB' to see your balance. \nSend 'BYE' for a goodbye."
 
-        elif body.lower() in ("check balance", '1'):
+        elif body.lower() in ("check balance", 'CB'):
             message = f"Your balance is {randint(1000,99999)}"
 
-        elif body.lower() in ('bye', "2"):
+        elif body.lower() == 'bye':
             message = "Goodbye"
 
         elif body:

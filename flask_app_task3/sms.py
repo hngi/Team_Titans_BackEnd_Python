@@ -9,11 +9,16 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 flask_app = Flask(__name__)
 flask_app.wsgi_app = ProxyFix(flask_app.wsgi_app)
 app = Api(app=flask_app)
+port = int(os.environ.get("PORT", 5000))
 
 
 
 
-sms_name_space = app.namespace('', description='SMS APIs')
+sms_name_space = app.namespace('v1', description='SMS APIs')
+
+@flask_app.route("/v1/documentation")
+def documentation():
+    return redirect("/swagger.json")
 
 
 

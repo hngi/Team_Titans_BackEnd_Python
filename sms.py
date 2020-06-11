@@ -4,18 +4,15 @@ from flask_restplus import Api, Resource, fields
 from random import randint
 from twilio_api import get_twilio_criteria, twilio_responder, twilio_sender
 from werkzeug.middleware.proxy_fix import ProxyFix
+import os
 
 
 flask_app = Flask(__name__)
 flask_app.wsgi_app = ProxyFix(flask_app.wsgi_app)
 app = Api(app=flask_app)
-
-
-
+os_get = os.environ.get
 
 sms_name_space = app.namespace('', description='SMS APIs')
-
-
 
 
 """
@@ -23,8 +20,15 @@ This is the details route. Enter the endpoint to get your details.
 You can change the client_number to your number if it's registered on the current account
 """
 @sms_name_space.route("/details")
+@sms_name_space.route("/details/<v1>")
+@sms_name_space.route("/details/<v1>/<configure>")
 class Login(Resource):
-    def get(self):
+    def get(self, v1=None, configure=None):
+        if v1 == "v1" and configure == None:
+            return {"doc": "This endpoint is for to receive details being used for the API.",
+                    "GET": "This method returns a list of details you can set as headers on a client app"}
+        elif (v1 or configure) and (v1 != "v1" or configure!="configure"):
+            return {"error": "Wrong endpoint"}, 404
         """All this does is return JSON for you to use as headers"""
         criteria = get_twilio_criteria()
         # All this does is return JSON for you to use as headers
@@ -36,10 +40,17 @@ This is the incoming SMS endpoint, it listens for your SMS and replies according
 This endpoint is best left untouched if you're not developing
 """
 
-
 @sms_name_space.route("/sms")
+@sms_name_space.route("/sms/<v1>")
+@sms_name_space.route("/sms/<v1>/<configure>")
 class IncomingSms(Resource):
-    def post(self):
+    def post(self, v1=None, configure=None):
+        if v1 == "v1" and configure == None:
+            return {"doc": "This endpoint is for programmatically replying to SMS's from registered numbers",
+                    "POST": f"Send an SMS to {os_get('SENDER')} to get a reply"}
+        elif (v1 or configure) and (v1 != "v1" or configure!="configure"):
+            return {"error": "Wrong endpoint"}, 404
+        
         """Send a dynamic reply to an incoming text message"""
         # Get the message the user sent our number
         body = request.values.get("Body", None)
@@ -92,17 +103,34 @@ parser.add_argument('receiver', location='headers')
 parser.add_argument('sender', location='headers')
 parser.add_argument('auth_token', location='headers')
 
-@sms_name_space.route("/send", endpoint="send")
+@sms_name_space.route("/send")
+@sms_name_space.route("/send/<v1>")
+@sms_name_space.route("/send/<v1>/<configure>", endpoint="send")
 class OutgoingSms(Resource):
     @sms_name_space.expect(send_data, parser)
-    def post(self):
+    def post(self, v1=None, configure=None):
+        if v1 == "v1" and configure == None:
+            return {"doc": "This endpoint is to send an sms to a registered number.",
+                    "GET": "Receive the JSON fields to send",
+                    "POST": "Send an SMS by sending the JSON fields"
+                    }
+        elif (v1 or configure) and (v1 != "v1" or configure!="configure"):
+            return {"error": "Wrong endpoint"}, 404
         """Checking the request method to proceed if POST"""
         response = twilio_sender(request)
         return response
 
-    def get(self):
+    def get(self, v1=None, configure=None):
+        if (v1 == "v1") and (configure == None):
+            return {"doc": "This endpoint is to send an sms to a registered number.",
+                    "GET": "Receive the JSON fields to send, sender and receiver keys are optional and can be cleared or left as default, text is required",
+                    "POST": "Send an SMS by sending the JSON fields"}
+        elif (v1 or configure) and (v1 != "v1" or configure!="configure"):
+            return {"error": "Wrong endpoint"}, 404
         """return JSON with criteria to fill"""
-        return {"Fill out the text body and client number if empty and submit as JSON": dict(sender=request.headers.get('sender'),
-                                                                                             reciever=request.headers.get("receiver"),
+        return {"Fill out the text body and client number if empty and submit as JSON": dict(sender=request.headers.get('sender', os_get("SENDER")),
+                                                                                             reciever=request.headers.get("receiver", os_get("RECEIVER")),
                                                                                              text="")
                 }
+if __name__ == "__main__":
+    flask_app.run()
